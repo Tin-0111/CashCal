@@ -111,9 +111,10 @@
             let sPiece = parseInt(document.getElementById("sPiece").value) || 0;
 
             let totalGemValue = gems + (energy * itemGemValues["에너지"]) + (piece * itemGemValues["장비 조각"]) + (key * itemGemValues["열쇠"]) + (sPiece * itemGemValues["S급 장비 조각"]);
-            let efficiency = (totalGemValue / price * 100).toFixed(2);
+            let calculatedPrice = totalGemValue * 17.5;
+            let efficiency = (calculatedPrice / price * 100).toFixed(2);
 
-            document.getElementById("result2").innerHTML = `<h3>패키지 효율</h3><p>총 젬 가치 ${totalGemValue}, 효율 ${efficiency}%</p>`;
+            document.getElementById("result2").innerHTML = `<h3>패키지 효율</h3><p>총 젬 가치 ${totalGemValue}, 계산된 가격 ${calculatedPrice.toLocaleString()}원, 실제 가격 ${price.toLocaleString()}원, 효율 ${efficiency}%</p>`;
         }
     </script>
 </body>
