@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>현질 효율 계산기</title>
+    <script>
+        function calculateBestDeal() {
+            let diamonds = parseInt(document.getElementById("diamonds").value) || 0;
+            let rubies = parseInt(document.getElementById("rubies").value) || 0;
+            let gems = parseInt(document.getElementById("gems").value) || 0;
+            
+            let totalGemsNeeded = gems + (diamonds * 15) + (rubies * 13);
+            let bestPrice = Infinity;
+            let bestOption = "";
+            
+            const gemPackages = [
+                { gems: 1000, price: 100000 },
+                { gems: 500, price: 52000 },
+                { gems: 100, price: 10500 },
+                { gems: 50, price: 5400 },
+                { gems: 10, price: 1100 }
+            ];
+            
+            const packageA = { gems: 500, diamonds: 10, rubies: 10, price: 75000 };
+            
+            function calculatePrice(gemsNeeded) {
+                let totalPrice = 0;
+                for (let pkg of gemPackages) {
+                    let count = Math.floor(gemsNeeded / pkg.gems);
+                    totalPrice += count * pkg.price;
+                    gemsNeeded -= count * pkg.gems;
+                }
+                if (gemsNeeded > 0) {
+                    for (let pkg of gemPackages.reverse()) {
+                        if (pkg.gems >= gemsNeeded) {
+                            totalPrice += pkg.price;
+                            break;
+                        }
+                    }
+                }
+                return totalPrice;
+            }
+            
+            let directPurchasePrice = calculatePrice(totalGemsNeeded);
+            if (directPurchasePrice < bestPrice) {
+                bestPrice = directPurchasePrice;
+                bestOption = `보석 개별 구매: ${bestPrice}원`;
+            }
+            
+            let packageA_GemsNeeded = totalGemsNeeded - packageA.gems - (packageA.diamonds * 15) - (packageA.rubies * 13);
+            if (packageA_GemsNeeded > 0) {
+                let packageAPrice = packageA.price + calculatePrice(packageA_GemsNeeded);
+                if (packageAPrice < bestPrice) {
+                    bestPrice = packageAPrice;
+                    bestOption = `패키지 A + 추가 보석 구매: ${bestPrice}원`;
+                }
+            } else {
+                if (packageA.price < bestPrice) {
+                    bestPrice = packageA.price;
+                    bestOption = `패키지 A 구매: ${bestPrice}원`;
+                }
+            }
+            
+            document.getElementById("result").innerText = `최고 효율 조합: ${bestOption}`;
+        }
+    </script>
+</head>
+<body>
+    <h2>현질 효율 계산기</h2>
+    <label>다이아 개수: <input type="number" id="diamonds" min="0"></label><br>
+    <label>루비 개수: <input type="number" id="rubies" min="0"></label><br>
+    <label>보석 개수: <input type="number" id="gems" min="0"></label><br>
+    <button onclick="calculateBestDeal()">계산하기</button>
+    <p id="result"></p>
+</body>
+</html>
