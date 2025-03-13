@@ -66,8 +66,18 @@
             let budget = parseInt(document.getElementById("budget").value) || 0;
             let resultText = "<h3>구매 가능 패키지 목록</h3>";
             let totalGemValue = 0;
+            let purchaseList = [];
 
-            for (let pkg of tangtangPackages) {
+            let packageEfficiencies = tangtangPackages.map(pkg => {
+                let pkgGemValue = pkg.gems;
+                for (let item in pkg.items) {
+                    pkgGemValue += pkg.items[item] * itemGemValues[item];
+                }
+                let efficiency = pkgGemValue / pkg.price;
+                return { ...pkg, efficiency };
+            }).sort((a, b) => b.efficiency - a.efficiency);
+
+            for (let pkg of packageEfficiencies) {
                 let maxPurchase = Math.floor(budget / pkg.price);
                 let purchaseCount = Math.min(maxPurchase, pkg.limit);
 
@@ -79,10 +89,14 @@
                     let totalPkgGemValue = pkgGemValue * purchaseCount;
                     totalGemValue += totalPkgGemValue;
 
-                    resultText += `<p>${pkg.name}: ${purchaseCount}회 구매 가능 (총 젬 가치: ${totalPkgGemValue})</p>`;
+                    purchaseList.push({ name: pkg.name, count: purchaseCount, totalGemValue: totalPkgGemValue });
                     budget -= pkg.price * purchaseCount;
                 }
             }
+
+            purchaseList.forEach(item => {
+                resultText += `<p>${item.name}: ${item.count}회 구매 가능 (총 젬 가치: ${item.totalGemValue})</p>`;
+            });
 
             resultText += `<h3>총 젬 가치: ${totalGemValue}</h3>`;
             document.getElementById("result1").innerHTML = resultText;
