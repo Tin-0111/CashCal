@@ -34,17 +34,17 @@
 
     <script>
         const tangtangPackages = [
-            { name: "초보자 패키지", price: 5900, gems: 300, items: { "에너지": 5, "장비 조각": 10 } },
-            { name: "중급 패키지", price: 19900, gems: 1000, items: { "에너지": 15, "장비 조각": 30, "열쇠": 3 } },
-            { name: "고급 패키지", price: 49900, gems: 3000, items: { "에너지": 30, "장비 조각": 70, "열쇠": 7, "S급 장비 조각": 5 } },
-            // ... 추가 패키지 정보 ...
+            { name: "초보자 패키지", price: 5900, gems: 300, items: { "에너지": 5, "장비 조각": 10 }, limit: 5 },
+            { name: "중급 패키지", price: 19900, gems: 1000, items: { "에너지": 15, "장비 조각": 30, "열쇠": 3 }, limit: 3 },
+            { name: "고급 패키지", price: 49900, gems: 3000, items: { "에너지": 30, "장비 조각": 70, "열쇠": 7, "S급 장비 조각": 5 }, limit: 1 },
+            // ... 실제 패키지 정보 및 구매 제한 횟수 추가 ...
         ];
 
         const itemGemValues = {
-            "에너지": 50, // 1 에너지 = 50 젬 (예시)
-            "장비 조각": 20, // 1 장비 조각 = 20 젬 (예시)
-            "열쇠": 100, // 1 열쇠 = 100 젬 (예시)
-            "S급 장비 조각": 500, // 1 S급 장비 조각 = 500 젬 (예시)
+            "에너지": 50,
+            "장비 조각": 20,
+            "열쇠": 100,
+            "S급 장비 조각": 500,
             // ... 아이템 젬 가치 ...
         };
 
@@ -64,24 +64,27 @@
 
         function calculateBestPackage() {
             let budget = parseInt(document.getElementById("budget").value) || 0;
-            let bestOption = null;
-            let bestEfficiency = 0;
-            let resultText = "<h3>패키지 효율 분석</h3>";
+            let resultText = "<h3>구매 가능 패키지 목록</h3>";
+            let totalGemValue = 0;
+
             for (let pkg of tangtangPackages) {
-                let { totalGemValue, efficiency } = calculatePackageEfficiency(pkg);
-                resultText += `<p>${pkg.name}: 총 젬 가치 ${totalGemValue}, 효율 ${efficiency}%</p>`;
-                if (pkg.price <= budget && efficiency > bestEfficiency) {
-                    bestEfficiency = efficiency;
-                    bestOption = pkg;
+                let maxPurchase = Math.floor(budget / pkg.price);
+                let purchaseCount = Math.min(maxPurchase, pkg.limit);
+
+                if (purchaseCount > 0) {
+                    let pkgGemValue = pkg.gems;
+                    for (let item in pkg.items) {
+                        pkgGemValue += pkg.items[item] * itemGemValues[item];
+                    }
+                    let totalPkgGemValue = pkgGemValue * purchaseCount;
+                    totalGemValue += totalPkgGemValue;
+
+                    resultText += `<p>${pkg.name}: ${purchaseCount}회 구매 가능 (총 젬 가치: ${totalPkgGemValue})</p>`;
+                    budget -= pkg.price * purchaseCount;
                 }
             }
-            if (bestOption) {
-                let { totalGemValue, efficiency } = calculatePackageEfficiency(bestOption);
-                resultText += `<h3>최고 효율 패키지 추천</h3>`;
-                resultText += `<p>${bestOption.name}: 총 젬 가치 ${totalGemValue}, 효율 ${efficiency}%</p>`;
-            } else {
-                resultText += `<p>예산 내에서 구매 가능한 최적의 패키지가 없습니다.</p>`;
-            }
+
+            resultText += `<h3>총 젬 가치: ${totalGemValue}</h3>`;
             document.getElementById("result1").innerHTML = resultText;
         }
 
