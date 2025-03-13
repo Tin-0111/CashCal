@@ -3,54 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>현질 효율 계산기</title>
+    <title>탕탕특공대 현질 효율 계산기</title>
+    <style>
+        /* CSS 스타일링 (필요에 따라 추가/수정) */
+    </style>
+</head>
+<body>
+    <h2>탕탕특공대 현질 효율 계산기</h2>
+    <button onclick="showCalculator(1)">보유 금액으로 패키지 추천</button>
+    <button onclick="showCalculator(2)">패키지 효율 계산</button>
+
+    <div id="calculator1" style="display:none;">
+        <h3>보유 금액으로 패키지 추천</h3>
+        <label>보유 금액 (KRW): <input type="number" id="budget" min="0"></label><br>
+        <button onclick="calculateBestPackage()">계산하기</button>
+        <div id="result1"></div>
+    </div>
+
+    <div id="calculator2" style="display:none;">
+        <h3>패키지 효율 계산</h3>
+        <label>패키지 가격 (KRW): <input type="number" id="packagePrice" min="0"></label><br>
+        <label>보석 개수: <input type="number" id="gems" min="0"></label><br>
+        <label>에너지 개수: <input type="number" id="energy" min="0"></label><br>
+        <label>장비 조각 개수: <input type="number" id="piece" min="0"></label><br>
+        <label>열쇠 개수: <input type="number" id="key" min="0"></label><br>
+        <label>S급 장비 조각 개수: <input type="number" id="sPiece" min="0"></label><br>
+        <button onclick="calculateCustomPackageEfficiency()">계산하기</button>
+        <div id="result2"></div>
+    </div>
+
     <script>
+        const tangtangPackages = [
+            // ... 패키지 정보 ...
+        ];
+
+        const itemGemValues = {
+            "에너지": 50, // 1 에너지 = 50 젬 (예시)
+            "장비 조각": 20, // 1 장비 조각 = 20 젬 (예시)
+            "열쇠": 100, // 1 열쇠 = 100 젬 (예시)
+            "S급 장비 조각": 500, // 1 S급 장비 조각 = 500 젬 (예시)
+            // ... 아이템 젬 가치 ...
+        };
+
+        function showCalculator(type) {
+            document.getElementById("calculator1").style.display = (type === 1) ? "block" : "none";
+            document.getElementById("calculator2").style.display = (type === 2) ? "block" : "none";
+        }
+
+        function calculatePackageEfficiency(package) {
+            let totalGemValue = package.gems;
+            for (let item in package.items) {
+                totalGemValue += package.items[item] * itemGemValues[item];
+            }
+            let efficiency = (totalGemValue / package.price * 100).toFixed(2);
+            return { totalGemValue, efficiency };
+        }
+
         function calculateBestPackage() {
             let budget = parseInt(document.getElementById("budget").value) || 0;
-            
-            const packages = [
-                { name: "패키지 A", gems: 500, diamonds: 10, rubies: 10, price: 75000 },
-                { name: "패키지 B", gems: 1000, diamonds: 20, rubies: 15, price: 140000 },
-                { name: "패키지 C", gems: 200, diamonds: 5, rubies: 5, price: 35000 }
-            ];
-            
-            function calculateEfficiency(pkg) {
-                let totalGems = pkg.gems + (pkg.diamonds * 15) + (pkg.rubies * 13);
-                let pricePerGem = pkg.price / totalGems;
-                let efficiency = (100 / pricePerGem).toFixed(2);
-                return { totalGems, pricePerGem, efficiency };
-            }
-            
             let bestOption = null;
             let bestEfficiency = 0;
             let resultText = "<h3>패키지 효율 분석</h3>";
-            
-            for (let pkg of packages) {
-                let { totalGems, pricePerGem, efficiency } = calculateEfficiency(pkg);
-                resultText += `<p>${pkg.name}: 총 ${totalGems} 보석, 1보석당 ${pricePerGem.toFixed(2)}원, 효율 ${efficiency}%</p>`;
-                
+            for (let pkg of tangtangPackages) {
+                let { totalGemValue, efficiency } = calculatePackageEfficiency(pkg);
+                resultText += `<p>${pkg.name}: 총 젬 가치 ${totalGemValue}, 효율 ${efficiency}%</p>`;
                 if (pkg.price <= budget && efficiency > bestEfficiency) {
                     bestEfficiency = efficiency;
                     bestOption = pkg;
                 }
             }
-            
             if (bestOption) {
-                let { totalGems, pricePerGem, efficiency } = calculateEfficiency(bestOption);
+                let { totalGemValue, efficiency } = calculatePackageEfficiency(bestOption);
                 resultText += `<h3>최고 효율 패키지 추천</h3>`;
-                resultText += `<p>${bestOption.name}: 총 ${totalGems} 보석, 1보석당 ${pricePerGem.toFixed(2)}원, 효율 ${efficiency}%</p>`;
+                resultText += `<p>${bestOption.name}: 총 젬 가치 ${totalGemValue}, 효율 ${efficiency}%</p>`;
             } else {
                 resultText += `<p>예산 내에서 구매 가능한 최적의 패키지가 없습니다.</p>`;
             }
-            
-            document.getElementById("result").innerHTML = resultText;
+            document.getElementById("result1").innerHTML = resultText;
+        }
+
+        function calculateCustomPackageEfficiency() {
+            let price = parseInt(document.getElementById("packagePrice").value) || 0;
+            let gems = parseInt(document.getElementById("gems").value) || 0;
+            let energy = parseInt(document.getElementById("energy").value) || 0;
+            let piece = parseInt(document.getElementById("piece").value) || 0;
+            let key = parseInt(document.getElementById("key").value) || 0;
+            let sPiece = parseInt(document.getElementById("sPiece").value) || 0;
+
+            let totalGemValue = gems + (energy * itemGemValues["에너지"]) + (piece * itemGemValues["장비 조각"]) + (key * itemGemValues["열쇠"]) + (sPiece * itemGemValues["S급 장비 조각"]);
+            let efficiency = (totalGemValue / price * 100).toFixed(2);
+
+            document.getElementById("result2").innerHTML = `<h3>패키지 효율</h3><p>총 젬 가치 ${totalGemValue}, 효율 ${efficiency}%</p>`;
         }
     </script>
-</head>
-<body>
-    <h2>현질 효율 계산기</h2>
-    <label>보유 금액 (KRW): <input type="number" id="budget" min="0"></label><br>
-    <button onclick="calculateBestPackage()">계산하기</button>
-    <div id="result"></div>
 </body>
 </html>
